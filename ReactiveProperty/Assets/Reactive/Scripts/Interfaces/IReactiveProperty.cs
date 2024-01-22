@@ -4,23 +4,33 @@ using System;
 
 namespace Reactive
 {
-    public interface INotifiedReactiveProperty
+    public interface IReactiveProperty
+    {
+    }
+
+    public interface INotifiedReactiveProperty : IReactiveProperty
     {
         void Notify();
     }
 
-    public interface IReadOnlyReactiveProperty<out T> : IDisposable
+    public interface IDisposableReactiveProperty : IReactiveProperty, IDisposable
+    {
+        void Unsubscribe(object owner);
+    }
+
+    // TODO: IObservable
+    public interface IReadOnlyReactiveProperty<out T> : IReactiveProperty
     {
         T Value { get; }
-        IDisposable Subscribe(object owner, Action<T>? action);
-        IDisposable Subscribe(object owner, Action<T>? action, bool notify);
-        IDisposable Subscribe(object owner, Action<T>? action, IDisposableComposite disposableComposite);
-        IDisposable Subscribe(object owner, Action<T>? action, bool notify, IDisposableComposite disposableComposite);
+        IDisposableReactiveProperty Subscribe(object owner, Action<T>? action, bool notify = true);
+        IDisposableReactiveProperty Subscribe(IReactivePropertyOwner owner, Action<T>? action, bool notify = true);
         void Unsubscribe(object owner, Action<T>? action);
         void Unsubscribe(object owner);
     }
 
-    public interface IReactiveProperty<T> : INotifiedReactiveProperty, IReadOnlyReactiveProperty<T>
+    // ReSharper disable once PossibleInterfaceMemberAmbiguity
+    public interface IReactiveProperty<T> : INotifiedReactiveProperty, IReadOnlyReactiveProperty<T>,
+        IDisposableReactiveProperty
     {
         new T Value { get; set; }
     }

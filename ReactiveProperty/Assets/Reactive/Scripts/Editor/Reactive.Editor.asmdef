@@ -1,0 +1,16 @@
+{
+    "name": "Reactive.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6e7e50bb8724b26449932c907771387e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

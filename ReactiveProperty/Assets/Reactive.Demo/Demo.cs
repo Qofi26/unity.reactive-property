@@ -1,43 +1,43 @@
 ﻿using System;
-using Reactive;
-using Reactive.Demo;
 using UnityEngine;
 
-public class Demo : MonoBehaviour, IDisposable
+namespace Reactive.Demo
 {
-    private IDisposableComposite _disposableComposite = new DisposableComposite();
-
-    [SerializeField]
-    private ReactiveProperty<int> _health = new();
-
-    [SerializeField]
-    private IntReactive _value1 = new(5);
-
-    private readonly ReactiveProperty<int> _mana = new();
-    private readonly ReactiveProperty<int> _money = new();
-
-    public void Test()
+    public class Demo : MonoBehaviour, IDisposable
     {
-        _disposableComposite
-            .Add(_health.Subscribe(this, OnValueChanged))
-            .Add(_mana.Subscribe(this, OnValueChanged))
-            .Add(_money.Subscribe(this, OnValueChanged));
+        private readonly ICompositeDisposable _compositeDisposable = new CompositeDisposable();
+        private readonly IReactivePropertyOwner _owner = new ReactivePropertyOwner();
 
-        _health.Subscribe(this, OnValueChanged).AddTo(_disposableComposite);
-        _mana.Subscribe(this, OnValueChanged).AddTo(_disposableComposite);
-        _money.Subscribe(this, OnValueChanged).AddTo(_disposableComposite);
+        [SerializeField]
+        private ReactiveProperty<int> _health = new();
 
-        _health.Subscribe(this, OnValueChanged, _disposableComposite);
-        _mana.Subscribe(this, OnValueChanged, _disposableComposite);
-        _money.Subscribe(this, OnValueChanged, _disposableComposite);
-    }
+        [SerializeField]
+        private IntReactiveProperty _mana = new(5);
 
-    private void OnValueChanged(int value)
-    {
-    }
+        private readonly ReactiveProperty<int> _money = new();
 
-    public void Dispose()
-    {
-        _disposableComposite?.Dispose();
+        public void Test()
+        {
+            _health.Subscribe(this, OnValueChanged).AddTo(_compositeDisposable);
+            _mana.Subscribe(this, OnValueChanged).AddTo(_compositeDisposable);
+            _money.Subscribe(this, OnValueChanged).AddTo(_compositeDisposable);
+        }
+
+        public void Test2()
+        {
+            _health.Subscribe(_owner, OnValueChanged).AddTo(_compositeDisposable);
+            _mana.Subscribe(_owner, OnValueChanged).AddTo(_compositeDisposable);
+            _money.Subscribe(_owner, OnValueChanged).AddTo(_compositeDisposable);
+        }
+
+        private void OnValueChanged(int value)
+        {
+        }
+
+        public void Dispose()
+        {
+            _compositeDisposable?.Dispose();
+            _owner.Dispose();
+        }
     }
 }
