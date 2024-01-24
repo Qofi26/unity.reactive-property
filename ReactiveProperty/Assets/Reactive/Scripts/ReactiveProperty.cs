@@ -40,9 +40,19 @@ namespace Reactive
             _value = value;
         }
 
+        public static implicit operator T(ReactiveProperty<T> property)
+        {
+            return property.Value;
+        }
+
+        public static implicit operator ReactiveProperty<T>(T value)
+        {
+            return new ReactiveProperty<T>(value);
+        }
+
         public void Notify()
         {
-            _subscriptions.RemoveAll(x => x.Owner == null || x.Action == null);
+            _subscriptions.RemoveAll(x => x.IsEmptyOrCompare());
             foreach (var subscription in _subscriptions)
             {
                 subscription.Notify(Value);
@@ -51,7 +61,7 @@ namespace Reactive
 
         public IDisposableReactiveProperty Subscribe(object owner, Action<T>? action, bool notify = true)
         {
-            return SubscribeInternal(new WeakReference(owner), action, notify);
+            return SubscribeInternal(owner, action, notify);
         }
 
         public IDisposableReactiveProperty Subscribe(IReactivePropertyOwner owner,
@@ -59,7 +69,7 @@ namespace Reactive
             bool notify = true)
         {
             owner.Add(this);
-            return SubscribeInternal(new WeakReference(owner), action, notify);
+            return SubscribeInternal(owner, action, notify);
         }
 
         public void Unsubscribe(object? owner, Action<T>? action)
@@ -69,7 +79,7 @@ namespace Reactive
                 return;
             }
 
-            _subscriptions.RemoveAll(x => x.Owner == owner && (x.Action == null || x.Action == action));
+            _subscriptions.RemoveAll(x => x.IsEmptyOrCompare(owner, action));
         }
 
         public void Unsubscribe(object? owner)
@@ -79,7 +89,7 @@ namespace Reactive
                 return;
             }
 
-            _subscriptions.RemoveAll(x => x.Owner == owner || x.Action == null);
+            _subscriptions.RemoveAll(x => x.IsEmptyOrCompare(owner));
         }
 
         public void Dispose()
@@ -87,9 +97,9 @@ namespace Reactive
             _subscriptions.Clear();
         }
 
-        private IDisposableReactiveProperty SubscribeInternal(WeakReference owner, Action<T>? action, bool notify)
+        private IDisposableReactiveProperty SubscribeInternal(object owner, Action<T>? action, bool notify)
         {
-            var subscription = new Subscription { Action = action, Owner = owner };
+            var subscription = new Subscription(owner, action);
             _subscriptions.Add(subscription);
             if (notify)
             {
@@ -101,23 +111,34 @@ namespace Reactive
 
         private sealed class Subscription
         {
-            public Action<T>? Action;
-            public WeakReference? Owner;
+            private readonly object? _owner;
+            private readonly Action<T>? _action;
+
+            public Subscription(object? owner, Action<T>? action)
+            {
+                _owner = owner;
+                _action = action;
+            }
 
             public void Notify(T value)
             {
-                Action?.Invoke(value);
+                _action?.Invoke(value);
             }
-        }
 
-        public static implicit operator T(ReactiveProperty<T> property)
-        {
-            return property.Value;
-        }
+            public bool IsEmptyOrCompare()
+            {
+                return _owner == null || _action == null;
+            }
 
-        public static implicit operator ReactiveProperty<T>(T value)
-        {
-            return new ReactiveProperty<T>(value);
+            public bool IsEmptyOrCompare(object? owner)
+            {
+                return IsEmptyOrCompare() || _owner == owner;
+            }
+
+            public bool IsEmptyOrCompare(object? owner, Action<T>? action)
+            {
+                return IsEmptyOrCompare() || IsEmptyOrCompare(owner) && _action == action;
+            }
         }
     }
 }
