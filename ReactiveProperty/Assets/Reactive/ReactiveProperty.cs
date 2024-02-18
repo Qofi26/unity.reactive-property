@@ -4,17 +4,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Reactive
+namespace Erem.Reactive
 {
     [Serializable]
     public class ReactiveProperty<T> : IReactiveProperty<T>
     {
+        [SerializeField]
+        private T _value;
+
         public T Value
         {
             get => _value;
             set
             {
-                if (_equalityComparer.Equals(Value, value))
+                if (DefaultEqualityComparer.Equals(_value, value))
                 {
                     return;
                 }
@@ -24,11 +27,11 @@ namespace Reactive
             }
         }
 
-        [SerializeField]
-        private T _value;
+        protected virtual EqualityComparer<T> EqualityComparer => DefaultEqualityComparer;
+
+        protected readonly EqualityComparer<T> DefaultEqualityComparer = EqualityComparer<T>.Default;
 
         private readonly List<Subscription> _subscriptions = new();
-        private readonly EqualityComparer<T> _equalityComparer = EqualityComparer<T>.Default;
 
         public ReactiveProperty()
         {
@@ -45,30 +48,13 @@ namespace Reactive
             return property.Value;
         }
 
-        public static implicit operator ReactiveProperty<T>(T value)
+        public void SetValue(T value)
         {
-            return new ReactiveProperty<T>(value);
+            Value = value;
         }
 
-        public void Notify()
+        public IDisposable Subscribe(object owner, Action<T>? action, bool notify = true)
         {
-            _subscriptions.RemoveAll(x => x.IsEmptyOrCompare());
-            foreach (var subscription in _subscriptions)
-            {
-                subscription.Notify(Value);
-            }
-        }
-
-        public IDisposableReactiveProperty Subscribe(object owner, Action<T>? action, bool notify = true)
-        {
-            return SubscribeInternal(owner, action, notify);
-        }
-
-        public IDisposableReactiveProperty Subscribe(IReactivePropertyOwner owner,
-            Action<T>? action,
-            bool notify = true)
-        {
-            owner.Add(this);
             return SubscribeInternal(owner, action, notify);
         }
 
@@ -94,10 +80,24 @@ namespace Reactive
 
         public void Dispose()
         {
+            foreach (var subscription in _subscriptions)
+            {
+                subscription.Dispose();
+            }
+
             _subscriptions.Clear();
         }
 
-        private IDisposableReactiveProperty SubscribeInternal(object owner, Action<T>? action, bool notify)
+        public void Notify()
+        {
+            _subscriptions.RemoveAll(x => x.IsEmptyOrCompare());
+            foreach (var subscription in _subscriptions)
+            {
+                subscription.Notify(Value);
+            }
+        }
+
+        private IDisposable SubscribeInternal(object owner, Action<T>? action, bool notify)
         {
             var subscription = new Subscription(owner, action);
             _subscriptions.Add(subscription);
@@ -106,13 +106,13 @@ namespace Reactive
                 subscription.Notify(Value);
             }
 
-            return this;
+            return subscription;
         }
 
-        private sealed class Subscription
+        private sealed class Subscription : IDisposable
         {
-            private readonly object? _owner;
-            private readonly Action<T>? _action;
+            private object? _owner;
+            private Action<T>? _action;
 
             public Subscription(object? owner, Action<T>? action)
             {
@@ -138,6 +138,12 @@ namespace Reactive
             public bool IsEmptyOrCompare(object? owner, Action<T>? action)
             {
                 return IsEmptyOrCompare() || IsEmptyOrCompare(owner) && _action == action;
+            }
+
+            public void Dispose()
+            {
+                _owner = null;
+                _action = null;
             }
         }
     }

@@ -4,8 +4,7 @@ using System;
 using UnityEngine;
 
 // ReSharper disable RedundantBaseConstructorCall
-
-namespace Reactive
+namespace Erem.Reactive
 {
     [Serializable]
     public class BoolReactiveProperty : ReactiveProperty<bool>

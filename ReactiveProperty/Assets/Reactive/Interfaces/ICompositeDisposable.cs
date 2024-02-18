@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Reactive
+namespace Erem.Reactive
 {
     public interface ICompositeDisposable : ICollection<IDisposable>, IDisposable
     {

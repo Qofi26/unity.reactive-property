@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Reactive
+namespace Erem.Reactive
 {
     public sealed class CompositeDisposable : ICompositeDisposable
     {
