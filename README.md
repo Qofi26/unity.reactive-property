@@ -1,5 +1,7 @@
 # Reactive property for Unity
 
-Install with Unity package manager by git url:
+## Install via UPM (using Git URL)
 
-https://github.com/qofi26/unity.reactive-property.git?path=/ReactiveProperty/Assets/Reactive
+````
+https://github.com/qofi26/unity.reactive-property.git?path=/ReactiveProperty/Assets/Reactive#v/0.1.0
+````

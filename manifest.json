@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "myCustomPackage": "https://github.com/qofi26/unity.reactive-property.git?path=/ReactiveProperty/Assets/Reactive"
-  }
-}
