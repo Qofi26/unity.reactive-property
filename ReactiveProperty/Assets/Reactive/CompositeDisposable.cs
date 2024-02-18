@@ -34,6 +34,11 @@ namespace Erem.Reactive
             _disposables.Add(item);
         }
 
+        public void Unsubscribe()
+        {
+            Clear();
+        }
+
         public void Clear()
         {
             foreach (var disposable in _disposables)

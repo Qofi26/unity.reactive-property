@@ -1,5 +1,5 @@
 {
-    "name": "Reactive.Demo",
+    "name": "Reactive.Example",
     "rootNamespace": "Erem",
     "references": [
         "GUID:6e7e50bb8724b26449932c907771387e"

@@ -7,5 +7,6 @@ namespace Erem.Reactive
 {
     public interface ICompositeDisposable : ICollection<IDisposable>, IDisposable
     {
+        void Unsubscribe();
     }
 }
