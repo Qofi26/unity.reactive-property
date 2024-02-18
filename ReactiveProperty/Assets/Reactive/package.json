@@ -1,0 +1,11 @@
+{
+  "name": "com.erem.reactive-property",
+  "version": "0.1.0",
+  "displayName": "Reactive Property",
+  "description": "This is reactive property for unity",
+  "documentationUrl": "https://github.com/qofi26/unity.reactive-property",
+  "keywords": [
+    "reactive",
+    "mvvm"
+  ]
+}
